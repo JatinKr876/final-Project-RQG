@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # QuoteVerse + Gemini AI
 
 This version replaces DummyJSON with Gemini AI.
@@ -47,3 +48,6 @@ The app needs `server.js` running because the browser sends quote requests to `/
 
 Never put the Gemini API key inside `public/script.js` or `public/index.html`.
 Never commit `.env` to GitHub.
+=======
+# final-Project-RQG
+>>>>>>> 27b7e76c8b43fdeb599657323bd5e0c71d798245
