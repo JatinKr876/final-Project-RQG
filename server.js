@@ -1,5 +1,8 @@
+
 import express from "express";
 import dotenv from "dotenv";
+import path from "path";
+import { fileURLToPath } from "url";
 import { GoogleGenAI } from "@google/genai";
 
 dotenv.config();
@@ -7,150 +10,102 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 5500;
 
-// Check API key
-if (!process.env.GEMINI_API_KEY) {
-    console.error("ERROR: GEMINI_API_KEY is missing in your .env file.");
-    process.exit(1);
-}
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
-// Gemini AI
-const ai = new GoogleGenAI({
-    apiKey: process.env.GEMINI_API_KEY
-});
+// Gemini AI setup
+const apiKey = process.env.GEMINI_API_KEY;
+
+const ai = apiKey
+    ? new GoogleGenAI({ apiKey })
+    : null;
 
 app.use(express.json());
-app.use(express.static("public"));
 
-// Generate Quote
+// Serve frontend files
+app.use(express.static(path.join(__dirname, "public")));
+
+// Homepage
+app.get("/", (req, res) => {
+    res.sendFile(
+        path.join(__dirname, "public", "index.html")
+    );
+});
+
+// Generate AI Quote
 app.post("/api/generate-quote", async (req, res) => {
-
     try {
+        if (!ai) {
+            return res.status(500).json({
+                error: "Gemini API key is not configured."
+            });
+        }
 
-        const topic = String(req.body.topic || "").trim();
+        const topic = String(req.body?.topic || "").trim();
 
-        // Check topic
         if (!topic) {
             return res.status(400).json({
                 error: "Please provide a quote topic."
             });
         }
 
-        // Limit topic length
         if (topic.length > 100) {
             return res.status(400).json({
-                error: "Topic must be 200 characters or less."
+                error: "Topic must be 100 characters or less."
             });
         }
 
-        // Prompt for Gemini
         const prompt = `
-Create ONE original motivational or inspirational quote based on this request:
-
-"${topic}"
+Create ONE original motivational or inspirational quote
+based on this topic: "${topic}"
 
 Rules:
-- Write only ONE quote.
-- Make it short, powerful and natural.
+- Write only one short, powerful and natural quote.
 - Do not use quotation marks.
-- Do not copy any famous quote.
-- Create a completely fresh and original quote.
-- Do not add explanation.
-- Do not add hashtags.
+- Do not copy famous quotes.
+- Do not add explanations or hashtags.
 - Do not add bullet points.
-- Do not mention that you are an AI.
 `;
 
-        let response;
+        const response = await ai.models.generateContent({
+            model: "gemini-2.5-flash",
+            contents: prompt,
+            config: {
+                temperature: 1,
+                maxOutputTokens: 100
+            }
+        });
 
-        // First model
-        try {
+        const quote = response.text?.trim();
 
-            console.log("Trying Gemini 3.5 Flash-Lite...");
-
-            response = await ai.models.generateContent({
-                model: "gemini-3.5-flash-lite",
-                contents: prompt,
-                config: {
-                    temperature: 1.0,
-                    maxOutputTokens: 100
-                }
-            });
-
-        } catch (firstError) {
-
-            console.log(
-                "Primary model unavailable. Trying fallback model..."
-            );
-
-            // Fallback model
-            response = await ai.models.generateContent({
-                model: "gemini-3.1-flash-lite",
-                contents: prompt,
-                config: {
-                    temperature: 1.0,
-                    maxOutputTokens: 100
-                }
-            });
-        }
-
-        // Get generated text
-        const generatedQuote = response.text?.trim();
-
-        // Empty response
-        if (!generatedQuote) {
-
+        if (!quote) {
             return res.status(502).json({
                 error: "Gemini returned an empty response. Please try again."
             });
-
         }
 
-        // Send quote to frontend
-        res.json({
-            quote: generatedQuote,
+        return res.json({
+            quote,
             author: "QuoteVerse AI"
         });
 
     } catch (error) {
+        console.error("Gemini API error:", error);
 
-        console.error("Gemini API error:");
-        console.error(error);
-
-        // Handle 503
-        if (error?.status === 503) {
-
-            return res.status(503).json({
-                error: "Gemini is temporarily busy. Please try again in a few seconds."
-            });
-
-        }
-
-        // Handle 401 / 403
-        if (
-            error?.status === 401 ||
-            error?.status === 403
-        ) {
-
-            return res.status(401).json({
-                error: "Gemini API key is invalid or does not have access."
-            });
-
-        }
-
-        // Handle other errors
-        res.status(500).json({
-            error: "Could not generate the quote. Please check your Gemini API setup."
+        return res.status(500).json({
+            error: "Could not generate the quote. Please try again."
         });
-
     }
-
 });
 
-// Start server
-app.listen(PORT, () => {
+// Local development server
+if (process.env.NODE_ENV !== "production") {
+    app.listen(PORT, () => {
+        console.log(
+            `QuoteVerse running at http://localhost:${PORT}`
+        );
+    });
+}
 
-    console.log(
-        `QuoteVerse is running at http://localhost:${PORT}`
-    );
-
-});
+// Export Express app for Vercel
+export default app;
