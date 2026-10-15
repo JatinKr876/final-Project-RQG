@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>QuoteVerse | AI Daily Inspiration</title>
+
+    <link rel="stylesheet" href="style.css">
+
+    <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+</head>
+
+<body>
+
+<header>
+    <h1>🌿 QuoteVerse</h1>
+    <p>One positive thought can change your entire day.</p>
+</header>
+
+<main class="container">
+
+    <section class="generator-box">
+        <h2>✨ Create Your Own Quote</h2>
+        <p>Tell Quoteverse, what kind of quote you want.</p>
+
+        <div class="input-row">
+            <input
+                type="text"
+                id="quotePrompt"
+                placeholder="e.g. motivation for coding students"
+                maxlength="200"
+                autocomplete="off"
+            >
+            <button id="generateBtn">✨ Generate</button>
+        </div>
+
+        <p id="status" class="status" aria-live="polite"></p>
+    </section>
+
+    <section id="quoteCard">
+
+        <div class="overlay"></div>
+
+        <article class="content">
+
+            <p id="quote">"Tell me what kind of quote you want."</p>
+
+            <h3 id="author">— QuoteVerse AI</h3>
+
+            <button id="favoriteBtn" aria-label="Add to favorites">
+                🤍
+            </button>
+
+        </article>
+
+    </section>
+
+    <p id="counter">Quotes Generated: 0</p>
+
+    <div class="buttons">
+
+        <div class="quote-wheel" id="newQuoteBtn" title="Generate another quote">
+
+            <div class="outer-ring">
+
+                <span class="dot"></span>
+                <span class="dot"></span>
+                <span class="dot"></span>
+                <span class="dot"></span>
+                <span class="dot"></span>
+                <span class="dot"></span>
+                <span class="dot"></span>
+                <span class="dot"></span>
+
+                <div class="center-circle">
+                    ✨
+                </div>
+
+            </div>
+
+        </div>
+
+        <button id="downloadBtn">📥 Download</button>
+        <button id="shareBtn">📱 Share</button>
+
+    </div>
+
+</main>
+
+<footer>
+    © 2026 QuoteVerse | AI-powered with Gemini
+</footer>
+
+<script src="script.js"></script>
+
+</body>
+</html>
