@@ -68,8 +68,8 @@ Rules:
 `;
 
         const response = await ai.models.generateContent({
-            model: "gemini-3.8-flash",
-            contents: prompt,
+            model: "gemini-3.5-flash-lite",
+            contents: prompt,  
             config: {
                 temperature: 1,
                 maxOutputTokens: 100
